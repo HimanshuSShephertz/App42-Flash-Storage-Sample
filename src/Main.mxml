@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ViewNavigatorApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+							xmlns:s="library://ns.adobe.com/flex/spark" firstView="views.MainHomeView" applicationDPI="160">
+	<fx:Script>
+		<![CDATA[
+			import com.shephertz.app42.paas.sdk.as3.App42API;
+			import com.shephertz.app42.paas.sdk.as3.App42Log;
+			import com.shephertz.app42.paas.sdk.as3.upload.UploadFileType;
+			import com.shephertz.file.storage.App42ServicesCallBack;
+			import com.shephertz.file.storage.Constant;
+			public function fileUpload():void {
+				App42API.initialize(Constant.API_key,Constant.Secret_key);
+				App42Log.setDebug(true);
+				App42API.buildUploadService().uploadFileForUser(Constant.FileName,Constant.UserName,Constant.FilePath,UploadFileType.IMAGE,"Uploaded SuccessFully",new App42ServicesCallBack());
+				App42API.buildLogService().info("File "+ Constant.FilePath +" Request submitted" ,"File Upload",new App42ServicesCallBack());
+			}
+			
+			public function allUploadedFiles():void {
+				App42API.initialize(Constant.API_key,Constant.Secret_key);
+				App42Log.setDebug(true);
+				App42API.buildUploadService().getAllFilesByUser(Constant.UserName,new App42ServicesCallBack());
+				App42API.buildLogService().info("File "+ Constant.FilePath +" Request submitted" ,"File Upload",new App42ServicesCallBack());
+				Constant.responseArray = true
+			}
+		]]>
+	</fx:Script>
+	
+</s:ViewNavigatorApplication>

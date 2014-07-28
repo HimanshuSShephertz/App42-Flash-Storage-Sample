@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" title="File Storage Sample">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.shephertz.app42.paas.sdk.as3.App42API;
+			import com.shephertz.file.storage.App42ServicesCallBack;
+			import com.shephertz.file.storage.Constant;
+			
+			import mx.core.FlexGlobals;
+			
+			private var file:FileReference;
+			private var path:String;
+			public var counter:int = 0;
+			[Bindable] 
+			private var imageSrc:String;	
+			public var timer:Timer;
+			private var imageTypes:FileFilter;
+			protected function fileUpload(event:MouseEvent):void {
+				Constant.UserName = userName.text
+				if(Constant.UserName != null && Constant.UserName != ""){
+					var file:File = File.documentsDirectory
+					file.addEventListener( Event.SELECT, onFolderSelected);
+					file.browse();
+				}else{
+					statusLabel.text = "Please enter the user name first"
+				}
+			}
+			public function onFolderSelected(e:Event):void
+			{
+				FileName.text = ""
+				var FileSelect:File = File(e.target)
+				Constant.FilePath = FileSelect.nativePath
+				Constant.FileName = FileSelect.name
+				FlexGlobals.topLevelApplication.fileUpload();
+				Constant.FileUploadProgess = true
+				timer = new Timer(1400);
+				timer.addEventListener(TimerEvent.TIMER, randGen);
+				timer.start();
+				
+			}
+			protected function allUploadedFiles(event:MouseEvent):void {
+				if(!Constant.FileUploadProgess){
+					if(Constant.UserName != null && Constant.UserName != ""){
+						FlexGlobals.topLevelApplication.allUploadedFiles();
+						Constant.FileFetchProgess = true
+						timer = new Timer(100);
+						timer.addEventListener(TimerEvent.TIMER, fetchFilesRequest);
+						timer.start();
+					}else{
+						statusLabel.text = "Please enter the user name first"
+					}
+				}else{
+					statusLabel.text = "Please wait while your file has been uploaded"
+				}
+			}
+			
+			public function randGen(e:TimerEvent):void{
+				if(Constant.FileUpload){
+					if(!Constant.FileUploadProgess){
+						statusLabel.text = "Excpetion in uploading files. Please check the logs "
+						App42API.buildLogService().error(Constant.exceptionMessage,"File Uploading",new App42ServicesCallBack());
+						Constant.FileUpload = false
+						Constant.FileUploadProgess = false
+						timer.stop();
+					}else{
+						Constant.FileUpload = false;
+						Constant.FileUploadProgess = false
+						statusLabel.text = "Uploaded SuccessFully"
+						timer.stop();
+					}
+				}else{
+					if(Constant.FileUploadProgess){
+						statusLabel.text = "Uploading......"
+					}
+				}
+			}
+			public function fetchFilesRequest(e:TimerEvent):void{
+				if(!Constant.FileFetchProgess){
+					statusLabel.text = ""
+					FileName.text =  Constant.UserName +" have uploaded "+ Constant.FileCount +" files" 
+					timer.stop()
+				}else{
+					statusLabel.text = "Fetching........"
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:layout>
+		<s:VerticalLayout gap="10" paddingTop="10" paddingLeft="10" paddingRight="10" />
+	</s:layout>
+	<s:Label text="User Name : " />
+	<s:TextInput id="userName" width="100%" />
+	<s:Button label="Upload File" click="fileUpload(event)" width="100%" />
+	<s:Button label="Fetch Files Count" click="allUploadedFiles(event)" width="100%" />
+	<s:Label id="statusLabel" color="#FF0000" fontWeight="bold" />
+	<s:Label id="FileName" fontWeight="bold" />
+</s:View>
